@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="sn.epf.pointage.ui.DashboardController"
+      styleClass="page-container" spacing="20"
+      stylesheets="@../css/styles.css">
+
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+    <Label text="Tableau de bord" styleClass="page-title"/>
+
+    <!-- Cards statistiques -->
+    <HBox spacing="16">
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label text="Séances du jour" styleClass="card-label"/>
+            <Label fx:id="lblSeancesJour" text="0" styleClass="card-value"/>
+        </VBox>
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label text="Présents" styleClass="card-label"/>
+            <Label fx:id="lblPresents" text="0" styleClass="card-value stat-green"/>
+        </VBox>
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label text="Absents" styleClass="card-label"/>
+            <Label fx:id="lblAbsents" text="0" styleClass="card-value stat-red"/>
+        </VBox>
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label text="Taux de présence" styleClass="card-label"/>
+            <Label fx:id="lblTaux" text="0%" styleClass="card-value stat-blue"/>
+        </VBox>
+    </HBox>
+
+    <!-- Graphiques -->
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <!-- LineChart 6 derniers mois -->
+        <VBox styleClass="chart-card" HBox.hgrow="ALWAYS">
+            <Label text="Présence — 6 derniers mois" styleClass="section-title"/>
+            <LineChart fx:id="lineChart" VBox.vgrow="ALWAYS">
+                <xAxis><CategoryAxis label="Mois"/></xAxis>
+                <yAxis><NumberAxis label="Séances"/></yAxis>
+            </LineChart>
+        </VBox>
+
+        <!-- PieChart vacataires/permanents -->
+        <VBox styleClass="chart-card" prefWidth="280">
+            <Label text="Répartition contrats" styleClass="section-title"/>
+            <PieChart fx:id="pieChart" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </HBox>
+
+    <!-- Alertes du jour -->
+    <VBox styleClass="section-card">
+        <Label text="⚠ Alertes du jour — Séances sans pointage" styleClass="section-title alert-title"/>
+        <TableView fx:id="tableAlertes" prefHeight="160">
+            <columns>
+                <TableColumn fx:id="colAlerteProfesseur" text="Professeur" prefWidth="200"/>
+                <TableColumn fx:id="colAlerteCours"      text="Cours"      prefWidth="180"/>
+                <TableColumn fx:id="colAlerteHeure"      text="Heure"      prefWidth="120"/>
+                <TableColumn fx:id="colAlerteSalle"      text="Salle"      prefWidth="120"/>
+                <TableColumn fx:id="colAlerteStatut"     text="Statut"     prefWidth="100"/>
+            </columns>
+        </TableView>
+    </VBox>
+</VBox>

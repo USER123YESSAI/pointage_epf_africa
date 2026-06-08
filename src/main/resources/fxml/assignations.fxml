@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="sn.epf.pointage.ui.AssignationsController"
+      styleClass="page-container" spacing="12"
+      stylesheets="@../css/styles.css">
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <Label text="Assignations" styleClass="page-title" HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnNew" text="Nouvelle assignation" onAction="#handleNewAssignation" styleClass="btn-secondary"/>
+        <Button fx:id="btnRefresh" text="Rafraîchir" onAction="#handleRefresh" styleClass="btn-primary"/>
+    </HBox>
+
+    <TableView fx:id="tableAssignations" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colId"        text="ID"    prefWidth="80"/>
+            <TableColumn fx:id="colProfesseur" text="Professeur" prefWidth="220"/>
+            <TableColumn fx:id="colCours"     text="Cours" prefWidth="260"/>
+            <TableColumn fx:id="colSalle"     text="Salle" prefWidth="140"/>
+            <TableColumn fx:id="colAnnee"     text="Année" prefWidth="120"/>
+            <TableColumn fx:id="colHeures"    text="Heures" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox>

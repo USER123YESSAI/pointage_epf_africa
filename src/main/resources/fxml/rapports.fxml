@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="sn.epf.pointage.ui.RapportsController"
+      styleClass="page-container" spacing="16"
+      stylesheets="@../css/styles.css">
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+    <Label text="Rapports Mensuels" styleClass="page-title"/>
+
+    <!-- Filtres -->
+    <HBox spacing="12" alignment="CENTER_LEFT" styleClass="filter-bar">
+        <Label text="Professeur :"/>
+        <ComboBox fx:id="comboProfesseur" prefWidth="250" promptText="Sélectionner..."/>
+        <Label text="Mois :"/>
+        <ComboBox fx:id="comboMois" prefWidth="120"/>
+        <Label text="Année :"/>
+        <ComboBox fx:id="comboAnnee" prefWidth="100"/>
+        <Button text="Générer" onAction="#handleGenerer" styleClass="btn-primary"/>
+    </HBox>
+
+    <!-- Infos rapport -->
+    <HBox spacing="16" styleClass="rapport-info-bar">
+        <Label fx:id="lblTotalHeures"  text="Total heures : —"  styleClass="info-badge"/>
+        <Label fx:id="lblMontantXOF"   text="Montant XOF : —"   styleClass="info-badge"/>
+        <Label fx:id="lblStatutRapport" text="Statut : —"       styleClass="info-badge"/>
+    </HBox>
+
+    <!-- Tableau des séances du rapport -->
+    <TableView fx:id="tableSeances" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colDate"    text="Date/Heure"    prefWidth="160"/>
+            <TableColumn fx:id="colCours"   text="Cours"         prefWidth="200"/>
+            <TableColumn fx:id="colDuree"   text="Durée (h)"     prefWidth="100"/>
+            <TableColumn fx:id="colStatut"  text="Statut"        prefWidth="120"/>
+            <TableColumn fx:id="colPointage" text="Pointage"     prefWidth="100"/>
+        </columns>
+    </TableView>
+
+    <!-- Actions -->
+    <HBox spacing="12">
+        <Button fx:id="btnValider"  text="✅ Valider le rapport" onAction="#handleValider"  styleClass="btn-primary"   disable="true"/>
+        <Button fx:id="btnExporter" text="📄 Exporter PDF"       onAction="#handleExporter" styleClass="btn-secondary" disable="true"/>
+    </HBox>
+</VBox>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="sn.epf.pointage.ui.LoginController"
+            styleClass="login-root"
+            stylesheets="@../css/styles.css">
+
+    <center>
+        <VBox alignment="CENTER" spacing="0" styleClass="login-card">
+            <!-- Logo / En-tête EPF -->
+            <VBox alignment="CENTER" spacing="8" styleClass="login-header">
+                <Label text="EPF AFRICA" styleClass="login-logo"/>
+                <Label text="Système de Gestion de Pointage" styleClass="login-subtitle"/>
+            </VBox>
+
+            <!-- Formulaire -->
+            <VBox spacing="16" styleClass="login-form">
+                <!-- Login -->
+                <VBox spacing="4">
+                    <Label text="Identifiant (email)" styleClass="form-label"/>
+                    <TextField fx:id="loginField"
+                               promptText="ex: admin@epf.sn"
+                               styleClass="form-input"/>
+                </VBox>
+
+                <!-- Mot de passe -->
+                <VBox spacing="4">
+                    <Label text="Mot de passe" styleClass="form-label"/>
+                    <PasswordField fx:id="passwordField"
+                                  promptText="••••••••"
+                                  styleClass="form-input"/>
+                </VBox>
+
+                <!-- Message d'erreur -->
+                <Label fx:id="errorLabel"
+                       text=""
+                       styleClass="error-label"
+                       visible="false"
+                       managed="false"/>
+
+                <!-- Bouton connexion -->
+                <Button fx:id="loginBtn"
+                        text="Se connecter"
+                        onAction="#handleLogin"
+                        styleClass="btn-primary"
+                        maxWidth="Infinity"
+                        defaultButton="true"/>
+            </VBox>
+
+            <Label text="EPF Africa © 2024 — Tous droits réservés"
+                   styleClass="login-footer"/>
+        </VBox>
+    </center>
+</BorderPane>

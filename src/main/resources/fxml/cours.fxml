@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="sn.epf.pointage.ui.CoursController"
+      spacing="12" stylesheets="@../css/styles.css" styleClass="page-container">
+    <padding><Insets top="18" right="18" bottom="18" left="18"/></padding>
+    <Label text="Gestion des Cours" styleClass="page-title"/>
+
+    <HBox spacing="8">
+        <Button fx:id="btnAdd" text="➕ Nouveau cours" onAction="#handleAdd" styleClass="btn-primary"/>
+        <Button fx:id="btnRefresh" text="⟳ Rafraîchir" onAction="#handleRefresh"/>
+    </HBox>
+
+    <TableView fx:id="tableCours" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colCode" text="Code" prefWidth="120"/>
+            <TableColumn fx:id="colIntitule" text="Intitulé" prefWidth="360"/>
+            <TableColumn fx:id="colFiliere" text="Filière" prefWidth="120"/>
+            <TableColumn fx:id="colNiveau" text="Niveau" prefWidth="80"/>
+        </columns>
+    </TableView>
+</VBox>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="sn.epf.pointage.ui.SalleFormController"
+      spacing="10" stylesheets="@../css/styles.css" styleClass="page-container">
+    <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+    <Label text="Nouvelle salle" styleClass="page-title"/>
+
+    <GridPane hgap="8" vgap="8">
+        <Label text="Nom" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldNom" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Bâtiment" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldBatiment" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Capacité" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldCapacite" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Équipements" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextArea fx:id="fieldEquipements" GridPane.rowIndex="3" GridPane.columnIndex="1" prefRowCount="3"/>
+    </GridPane>
+
+    <HBox spacing="8" alignment="CENTER_RIGHT">
+        <Button text="Annuler" onAction="#handleCancel"/>
+        <Button text="Enregistrer" onAction="#handleSave" styleClass="btn-primary"/>
+    </HBox>
+</VBox>

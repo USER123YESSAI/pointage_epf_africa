@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="sn.epf.pointage.ui.PointageController"
+      styleClass="page-container" spacing="16"
+      stylesheets="@../css/styles.css">
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <Label text="Pointage du jour" styleClass="page-title" HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lblDate" text="" styleClass="date-label"/>
+    </HBox>
+
+    <Label text="Sélectionnez une séance et cliquez sur Pointer pour enregistrer votre présence."
+           styleClass="help-text"/>
+
+    <TableView fx:id="tableSeances" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colHeure"   text="Heure"    prefWidth="100"/>
+            <TableColumn fx:id="colCours"   text="Cours"    prefWidth="200"/>
+            <TableColumn fx:id="colSalle"   text="Salle"    prefWidth="100"/>
+            <TableColumn fx:id="colStatut"  text="Statut"   prefWidth="120"/>
+            <TableColumn fx:id="colDebut"   text="Pointage DEBUT" prefWidth="140"/>
+            <TableColumn fx:id="colFin"     text="Pointage FIN"   prefWidth="140"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Button fx:id="btnPointerDebut" text="✅ Pointer DEBUT" onAction="#handlePointerDebut"
+                styleClass="btn-primary" disable="true"/>
+        <Button fx:id="btnPointerFin"   text="🏁 Pointer FIN"  onAction="#handlePointerFin"
+                styleClass="btn-secondary" disable="true"/>
+        <Label fx:id="lblResultat" text="" styleClass="resultat-label"/>
+    </HBox>
+</VBox>

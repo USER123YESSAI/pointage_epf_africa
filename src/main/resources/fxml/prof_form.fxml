@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="sn.epf.pointage.ui.ProfFormController"
+      spacing="16" prefWidth="520"
+      stylesheets="@../css/styles.css">
+    <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
+
+    <Label fx:id="lblTitre" text="Enrôler un nouveau professeur" styleClass="page-title"/>
+
+    <!-- Message d'erreur -->
+    <Label fx:id="lblErreur" text="" styleClass="error-label" visible="false" managed="false"/>
+
+    <HBox spacing="20">
+        <!-- Formulaire gauche -->
+        <VBox spacing="12" HBox.hgrow="ALWAYS">
+            <HBox spacing="12">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Nom *" styleClass="form-label"/>
+                    <TextField fx:id="fieldNom" promptText="Nom de famille" styleClass="form-input"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Prénom *" styleClass="form-label"/>
+                    <TextField fx:id="fieldPrenom" promptText="Prénom" styleClass="form-input"/>
+                </VBox>
+            </HBox>
+
+            <VBox spacing="4">
+                <Label text="Email * (sera l'identifiant de connexion)" styleClass="form-label"/>
+                <TextField fx:id="fieldEmail" promptText="prenom.nom@epf.sn" styleClass="form-input"/>
+            </VBox>
+
+            <HBox spacing="12">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Téléphone" styleClass="form-label"/>
+                    <TextField fx:id="fieldTelephone" promptText="+221 7X XXX XX XX" styleClass="form-input"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Type contrat *" styleClass="form-label"/>
+                    <ComboBox fx:id="comboContrat" maxWidth="Infinity" styleClass="form-input"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="12">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Filière" styleClass="form-label"/>
+                    <ComboBox fx:id="comboFiliere" maxWidth="Infinity" styleClass="form-input"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Taux horaire (XOF/h)" styleClass="form-label"/>
+                    <TextField fx:id="fieldTauxHoraire" promptText="ex: 5000" styleClass="form-input"/>
+                </VBox>
+            </HBox>
+
+            <VBox spacing="4">
+                <Label text="Spécialité" styleClass="form-label"/>
+                <TextField fx:id="fieldSpecialite" promptText="ex: Développement Web, Réseaux..." styleClass="form-input"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Date d'embauche" styleClass="form-label"/>
+                <DatePicker fx:id="dateEmbauche" maxWidth="Infinity"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Mot de passe initial" styleClass="form-label"/>
+                <PasswordField fx:id="fieldMotDePasse" promptText="Laisser vide → Epf@2024" styleClass="form-input"/>
+            </VBox>
+        </VBox>
+
+        <!-- Photo à droite -->
+        <VBox spacing="8" alignment="TOP_CENTER" prefWidth="120">
+            <Label text="Photo" styleClass="form-label"/>
+            <ImageView fx:id="imagePhoto" fitWidth="100" fitHeight="120"
+                       preserveRatio="true"
+                       style="-fx-border-color: #CCC; -fx-border-width: 1;"/>
+            <Button text="📷 Choisir" onAction="#handleUploadPhoto"
+                    styleClass="btn-secondary" maxWidth="Infinity"/>
+        </VBox>
+    </HBox>
+
+    <!-- Boutons -->
+    <HBox spacing="12" alignment="CENTER_RIGHT">
+        <Button text="Annuler" onAction="#handleAnnuler" styleClass="btn-secondary"/>
+        <Button fx:id="btnSauvegarder" text="✅ Enregistrer"
+                onAction="#handleSauvegarder" styleClass="btn-primary"/>
+    </HBox>
+</VBox>

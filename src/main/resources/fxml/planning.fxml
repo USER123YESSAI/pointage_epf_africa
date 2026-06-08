@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="sn.epf.pointage.ui.PlanningController"
+      styleClass="page-container" spacing="16"
+      stylesheets="@../css/styles.css">
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <Label text="Planning des Cours" styleClass="page-title" HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnNouvellePlanification" text="+ Nouvelle assignation"
+                onAction="#handleNouvellePlanification" styleClass="btn-primary"/>
+    </HBox>
+
+    <!-- Filtres semaine -->
+    <HBox spacing="12" alignment="CENTER_LEFT" styleClass="filter-bar">
+        <Button text="◀ Semaine préc." onAction="#handleSemainePrec" styleClass="btn-secondary"/>
+        <DatePicker fx:id="dateDebut" promptText="Semaine du..."/>
+        <Button text="Semaine suiv. ▶" onAction="#handleSemaineSuiv" styleClass="btn-secondary"/>
+        <Label text="  Professeur :"/>
+        <ComboBox fx:id="comboProfesseur" prefWidth="220"/>
+    </HBox>
+
+    <!-- TableView planning -->
+    <TableView fx:id="tableSeances" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colJour"   text="Jour"      prefWidth="160"/>
+            <TableColumn fx:id="colHeure"  text="Heure"     prefWidth="80"/>
+            <TableColumn fx:id="colCours"  text="Cours"     prefWidth="220"/>
+            <TableColumn fx:id="colSalle"  text="Salle"     prefWidth="100"/>
+            <TableColumn fx:id="colDuree"  text="Durée"     prefWidth="80"/>
+            <TableColumn fx:id="colStatut" text="Statut"    prefWidth="120"/>
+        </columns>
+    </TableView>
+</VBox>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="sn.epf.pointage.ui.MainController"
+            stylesheets="@../css/styles.css"
+            prefWidth="1200" prefHeight="750">
+
+    <!-- Sidebar de navigation -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="220">
+            <!-- Logo -->
+            <VBox styleClass="sidebar-header" alignment="CENTER">
+                <Label text="EPF AFRICA" styleClass="sidebar-logo"/>
+                <Label text="Pointage" styleClass="sidebar-sub"/>
+            </VBox>
+
+            <!-- Menu items -->
+            <VBox styleClass="sidebar-menu" VBox.vgrow="ALWAYS">
+                <Button fx:id="btnDashboard"    text="🏠  Tableau de bord"    onAction="#showDashboard"   styleClass="menu-item" maxWidth="Infinity"/>
+                <Button fx:id="btnProfesseurs"  text="👨‍🏫  Professeurs"       onAction="#showProfesseurs" styleClass="menu-item" maxWidth="Infinity"/>
+                <Button fx:id="btnCours"        text="📚  Cours"              onAction="#showCours"       styleClass="menu-item" maxWidth="Infinity"/>
+                <Button fx:id="btnSalles"       text="🏫  Salles"             onAction="#showSalles"      styleClass="menu-item" maxWidth="Infinity"/>
+                <Button fx:id="btnPlanning"     text="📅  Planning"           onAction="#showPlanning"    styleClass="menu-item" maxWidth="Infinity"/>
+                <Button fx:id="btnAssignations" text="🧾  Assignations"       onAction="#showAssignations" styleClass="menu-item" maxWidth="Infinity"/>
+                <Button fx:id="btnPointage"     text="✅  Pointage"           onAction="#showPointage"    styleClass="menu-item" maxWidth="Infinity"/>
+                <Button fx:id="btnRapports"     text="📊  Rapports"           onAction="#showRapports"    styleClass="menu-item" maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Pied sidebar : utilisateur connecté -->
+            <VBox styleClass="sidebar-footer">
+                <Label fx:id="labelUtilisateur" text="Utilisateur" styleClass="sidebar-user"/>
+                <Label fx:id="labelRole"        text="Rôle"        styleClass="sidebar-role"/>
+                <Button text="Déconnexion" onAction="#handleDeconnexion" styleClass="btn-logout" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- Zone de contenu principal -->
+    <center>
+        <StackPane fx:id="contentArea" styleClass="content-area"/>
+    </center>
+</BorderPane>

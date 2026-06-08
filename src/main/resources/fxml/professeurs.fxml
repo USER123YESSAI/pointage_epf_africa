@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="sn.epf.pointage.ui.ProfesseursController"
+      styleClass="page-container" spacing="16"
+      stylesheets="@../css/styles.css">
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <Label text="Gestion des Professeurs" styleClass="page-title" HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnAjouter" text="+ Ajouter" onAction="#handleAjouter" styleClass="btn-primary"/>
+    </HBox>
+
+    <!-- Barre de recherche et filtres -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField" promptText="Rechercher par nom..." prefWidth="250" onKeyReleased="#handleRecherche"/>
+        <ComboBox fx:id="filtreContrat" promptText="Type contrat" onAction="#handleFiltre" prefWidth="150"/>
+        <ComboBox fx:id="filtreFiliere" promptText="Filière" onAction="#handleFiltre" prefWidth="150"/>
+        <Button text="Réinitialiser" onAction="#handleReset" styleClass="btn-secondary"/>
+    </HBox>
+
+    <!-- TableView principale -->
+    <TableView fx:id="tableProfesseurs" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colMatricule"   text="Matricule"    prefWidth="130"/>
+            <TableColumn fx:id="colNom"         text="Nom"          prefWidth="130"/>
+            <TableColumn fx:id="colPrenom"      text="Prénom"       prefWidth="130"/>
+            <TableColumn fx:id="colEmail"       text="Email"        prefWidth="200"/>
+            <TableColumn fx:id="colContrat"     text="Contrat"      prefWidth="110"/>
+            <TableColumn fx:id="colFiliere"     text="Filière"      prefWidth="120"/>
+            <TableColumn fx:id="colActif"       text="Statut"       prefWidth="80"/>
+        </columns>
+    </TableView>
+
+    <!-- Boutons d'action -->
+    <HBox spacing="12">
+        <Button text="✏ Modifier"    onAction="#handleModifier"   styleClass="btn-secondary" fx:id="btnModifier" disable="true"/>
+        <Button text="🚫 Désactiver" onAction="#handleDesactiver" styleClass="btn-danger"    fx:id="btnDesactiver" disable="true"/>
+    </HBox>
+</VBox>
