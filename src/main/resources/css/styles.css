@@ -211,6 +211,14 @@
     -fx-fill: #1A2744;
 }
 
+/* Empêcher la sélection de rendre noir les badges de statut */
+.table-view .table-row-cell:selected .badge-ok,
+.table-view .table-row-cell:selected .badge-retard,
+.table-view .table-row-cell:selected .badge-absent {
+    -fx-text-fill: inherit;
+}
+
+
 .table-view .table-row-cell:hover {
     -fx-background-color: #EEF4FB;
 }

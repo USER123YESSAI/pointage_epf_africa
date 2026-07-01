@@ -1,10 +1,11 @@
 package sn.epf.pointage.dao;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import sn.epf.pointage.model.RapportMensuel;
-import sn.epf.pointage.model.enums.StatutRapport;
 import java.util.List;
 import java.util.Optional;
+
+import org.hibernate.Session;
+
+import sn.epf.pointage.model.RapportMensuel;
+import sn.epf.pointage.model.enums.StatutRapport;
 
 public class RapportDAO extends AbstractDAO<RapportMensuel, Long> {
     public RapportDAO() { super(RapportMensuel.class); }
@@ -16,6 +17,16 @@ public class RapportDAO extends AbstractDAO<RapportMensuel, Long> {
                 RapportMensuel.class)
                 .setParameter("profId", professeurId).setParameter("mois", mois).setParameter("annee", annee)
                 .uniqueResultOptional();
+        }
+    }
+
+    public Optional<RapportMensuel> findByIdWithProfesseur(Long id) {
+        try (Session session = openSession()) {
+            return session.createQuery(
+                    "SELECT r FROM RapportMensuel r JOIN FETCH r.professeur WHERE r.id = :id",
+                    RapportMensuel.class)
+                    .setParameter("id", id)
+                    .uniqueResultOptional();
         }
     }
 

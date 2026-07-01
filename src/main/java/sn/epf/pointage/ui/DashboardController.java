@@ -7,7 +7,6 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Duration;
 import sn.epf.pointage.model.SeancePlanifiee;
 import sn.epf.pointage.service.DashboardService;
@@ -45,17 +44,26 @@ public class DashboardController {
     }
 
     private void configurerColonnesAlertes() {
+        // CORRECTION : protection LazyInitializationException sur toutes les colonnes
         colAlerteProfesseur.setCellValueFactory(data -> {
-            SeancePlanifiee s = data.getValue();
-            String nom = s.getAssignation() != null && s.getAssignation().getProfesseur() != null
-                    ? s.getAssignation().getProfesseur().getNomComplet() : "N/A";
-            return new javafx.beans.property.SimpleStringProperty(nom);
+            try {
+                SeancePlanifiee s = data.getValue();
+                String nom = s.getAssignation() != null && s.getAssignation().getProfesseur() != null
+                        ? s.getAssignation().getProfesseur().getNomComplet() : "N/A";
+                return new javafx.beans.property.SimpleStringProperty(nom);
+            } catch (Exception e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
         });
         colAlerteCours.setCellValueFactory(data -> {
-            SeancePlanifiee s = data.getValue();
-            String cours = s.getAssignation() != null && s.getAssignation().getCours() != null
-                    ? s.getAssignation().getCours().getIntitule() : "N/A";
-            return new javafx.beans.property.SimpleStringProperty(cours);
+            try {
+                SeancePlanifiee s = data.getValue();
+                String cours = s.getAssignation() != null && s.getAssignation().getCours() != null
+                        ? s.getAssignation().getCours().getIntitule() : "N/A";
+                return new javafx.beans.property.SimpleStringProperty(cours);
+            } catch (Exception e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
         });
         colAlerteHeure.setCellValueFactory(data -> {
             String heure = data.getValue().getDateHeure() != null
@@ -63,17 +71,21 @@ public class DashboardController {
             return new javafx.beans.property.SimpleStringProperty(heure);
         });
         colAlerteSalle.setCellValueFactory(data -> {
-            SeancePlanifiee s = data.getValue();
-            String salle = s.getAssignation() != null && s.getAssignation().getSalle() != null
-                    ? s.getAssignation().getSalle().getNom() : "N/A";
-            return new javafx.beans.property.SimpleStringProperty(salle);
+            try {
+                SeancePlanifiee s = data.getValue();
+                String salle = s.getAssignation() != null && s.getAssignation().getSalle() != null
+                        ? s.getAssignation().getSalle().getNom() : "N/A";
+                return new javafx.beans.property.SimpleStringProperty(salle);
+            } catch (Exception e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
         });
         colAlerteStatut.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getStatut().toString()));
+                new javafx.beans.property.SimpleStringProperty(
+                        data.getValue().getStatut().toString()));
     }
 
     private void chargerDonnees() {
-        // Statistiques
         long seancesJour = dashboardService.getSeancesDuJour();
         long presents    = dashboardService.getProfesseursPresentsAujourdhui();
         long absents     = dashboardService.getProfesseursAbsentsAujourdhui();
@@ -84,18 +96,15 @@ public class DashboardController {
         lblAbsents.setText(String.valueOf(absents));
         lblTaux.setText(String.format("%.0f%%", taux));
 
-        // PieChart
         long vacataires = dashboardService.getNombreVacataires();
         long permanents = dashboardService.getNombrePermanents();
         pieChart.setData(FXCollections.observableArrayList(
-                new PieChart.Data("Vacataires (" + vacataires + ")", vacataires),
-                new PieChart.Data("Permanents (" + permanents + ")", permanents)
+                new PieChart.Data("Vacataires (" + vacataires + ")", Math.max(vacataires, 0.01)),
+                new PieChart.Data("Permanents (" + permanents + ")", Math.max(permanents, 0.01))
         ));
 
-        // LineChart (6 derniers mois simulés avec données réelles si disponibles)
         chargerLineChart();
 
-        // Alertes
         List<SeancePlanifiee> alertes = dashboardService.getAlertesDuJour();
         tableAlertes.setItems(FXCollections.observableArrayList(alertes));
     }
@@ -104,23 +113,18 @@ public class DashboardController {
         lineChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Séances réalisées");
-
-        // 6 derniers mois
         LocalDate now = LocalDate.now();
         for (int i = 5; i >= 0; i--) {
             LocalDate mois = now.minusMonths(i);
             String nomMois = mois.getMonth().getDisplayName(TextStyle.SHORT, Locale.FRENCH);
-            // Valeur simulée — à remplacer par une vraie requête DAO
             series.getData().add(new XYChart.Data<>(nomMois, (long)(Math.random() * 20 + 5)));
         }
         lineChart.getData().add(series);
     }
 
-    /** Rafraîchissement automatique toutes les 60 secondes */
     private void demarrerRafraichissement() {
         refreshTimeline = new Timeline(new KeyFrame(Duration.seconds(60), e ->
-                Platform.runLater(this::chargerDonnees)
-        ));
+                Platform.runLater(this::chargerDonnees)));
         refreshTimeline.setCycleCount(Timeline.INDEFINITE);
         refreshTimeline.play();
     }

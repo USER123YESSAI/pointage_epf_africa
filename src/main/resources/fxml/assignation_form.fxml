@@ -2,18 +2,16 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.*?>
-<?import java.lang.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="sn.epf.pointage.ui.AssignationFormController"
-      spacing="16" prefWidth="720"
+      spacing="14" prefWidth="680"
       stylesheets="@../css/styles.css">
-
     <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
 
-    <Label fx:id="lblTitre" text="Nouvelle assignation (Cours + Périodicité)" styleClass="page-title"/>
-
-    <Label fx:id="lblErreur" text="" styleClass="error-label" visible="false" managed="false" wrapText="true"/>
+    <Label text="Nouvelle assignation de cours" styleClass="page-title"/>
+    <Label fx:id="lblErreur" text="" styleClass="error-label"
+           visible="false" managed="false" wrapText="true"/>
 
     <GridPane hgap="14" vgap="10">
         <columnConstraints>
@@ -21,49 +19,42 @@
             <ColumnConstraints percentWidth="65"/>
         </columnConstraints>
 
-        <!-- Professeur -->
-        <Label text="Professeur" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="form-label"/>
-        <ComboBox fx:id="comboProfesseur" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="form-input"/>
+        <Label text="Professeur *" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="form-label"/>
+        <ComboBox fx:id="comboProfesseur" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="Infinity"/>
 
-        <!-- Cours -->
-        <Label text="Cours" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="form-label"/>
-        <ComboBox fx:id="comboCours" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="form-input"/>
+        <Label text="Cours *" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="form-label"/>
+        <ComboBox fx:id="comboCours" GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="Infinity"/>
 
-        <!-- Salle -->
         <Label text="Salle" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="form-label"/>
-        <ComboBox fx:id="comboSalle" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="form-input"/>
+        <ComboBox fx:id="comboSalle" GridPane.rowIndex="2" GridPane.columnIndex="1" maxWidth="Infinity"/>
 
-        <!-- Année académique -->
-        <Label text="Année académique" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="form-label"/>
-        <TextField fx:id="fieldAnneeAcademique" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="form-input" promptText="ex: 2025-2026"/>
+        <Label text="Année académique *" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="form-label"/>
+        <TextField fx:id="fieldAnneeAcademique" GridPane.rowIndex="3" GridPane.columnIndex="1"
+                   styleClass="form-input" promptText="ex: 2025-2026"/>
 
-        <!-- Heures prévues -->
         <Label text="Heures prévues" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="form-label"/>
-        <TextField fx:id="fieldHeuresPrevues" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="form-input" promptText="ex: 60"/>
+        <TextField fx:id="fieldHeuresPrevues" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                   styleClass="form-input" promptText="ex: 60"/>
 
-        <!-- Jour semaine -->
-        <Label text="Jour de la semaine" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="form-label"/>
-        <ComboBox fx:id="comboJour" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="form-input"/>
+        <Label text="Jour de la semaine *" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="form-label"/>
+        <ComboBox fx:id="comboJour" GridPane.rowIndex="5" GridPane.columnIndex="1" maxWidth="Infinity"/>
 
-        <!-- Heure début -->
-        <Label text="Heure début" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="form-label"/>
-        <TextField fx:id="fieldHeureDebut" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="form-input" promptText="HH:mm (ex: 08:30)"/>
+        <Label text="Heure début (HH:mm) *" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="form-label"/>
+        <TextField fx:id="fieldHeureDebut" GridPane.rowIndex="6" GridPane.columnIndex="1"
+                   styleClass="form-input" promptText="ex: 08:00"/>
 
-        <!-- Heure fin -->
-        <Label text="Heure fin" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="form-label"/>
-        <TextField fx:id="fieldHeureFin" GridPane.rowIndex="7" GridPane.columnIndex="1" styleClass="form-input" promptText="HH:mm (ex: 10:30)"/>
+        <Label text="Heure fin (HH:mm) *" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="form-label"/>
+        <TextField fx:id="fieldHeureFin" GridPane.rowIndex="7" GridPane.columnIndex="1"
+                   styleClass="form-input" promptText="ex: 10:00"/>
 
-        <!-- Fréquence -->
-        <Label text="Fréquence" GridPane.rowIndex="8" GridPane.columnIndex="0" styleClass="form-label"/>
-        <ComboBox fx:id="comboFrequence" GridPane.rowIndex="8" GridPane.columnIndex="1" styleClass="form-input"/>
+        <Label text="Fréquence *" GridPane.rowIndex="8" GridPane.columnIndex="0" styleClass="form-label"/>
+        <ComboBox fx:id="comboFrequence" GridPane.rowIndex="8" GridPane.columnIndex="1" maxWidth="Infinity"/>
 
-        <!-- Date début semestre -->
-        <Label text="Date début semestre" GridPane.rowIndex="9" GridPane.columnIndex="0" styleClass="form-label"/>
-        <DatePicker fx:id="dateDebutSemestre" GridPane.rowIndex="9" GridPane.columnIndex="1" styleClass="form-input"/>
+        <Label text="Date début semestre *" GridPane.rowIndex="9" GridPane.columnIndex="0" styleClass="form-label"/>
+        <DatePicker fx:id="dateDebutSemestre" GridPane.rowIndex="9" GridPane.columnIndex="1" maxWidth="Infinity"/>
 
-        <!-- Date fin semestre -->
-        <Label text="Date fin semestre" GridPane.rowIndex="10" GridPane.columnIndex="0" styleClass="form-label"/>
-        <DatePicker fx:id="dateFinSemestre" GridPane.rowIndex="10" GridPane.columnIndex="1" styleClass="form-input"/>
+        <Label text="Date fin semestre *" GridPane.rowIndex="10" GridPane.columnIndex="0" styleClass="form-label"/>
+        <DatePicker fx:id="dateFinSemestre" GridPane.rowIndex="10" GridPane.columnIndex="1" maxWidth="Infinity"/>
     </GridPane>
 
     <HBox spacing="12" alignment="CENTER_RIGHT">
@@ -71,4 +62,3 @@
         <Button fx:id="btnSauvegarder" text="✅ Planifier" onAction="#handleSauvegarder" styleClass="btn-primary"/>
     </HBox>
 </VBox>
-

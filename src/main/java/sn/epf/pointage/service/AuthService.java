@@ -75,7 +75,7 @@ public class AuthService {
         System.out.println("🔑 Compte ADMIN créé : admin@epf.sn / Admin@2024");
     }
 
-    // ── Compte SCOLARITE (NOUVEAU) ────────────────────────────────────
+    // ── Compte SCOLARITE  ────────────────────────────────────
     Optional<Utilisateur> scolarite = utilisateurDAO.findByLogin("scolarite@epf.sn");
     if (scolarite.isEmpty()) {
         Utilisateur u = new Utilisateur();

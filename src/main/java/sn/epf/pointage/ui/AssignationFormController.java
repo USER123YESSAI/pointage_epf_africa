@@ -5,7 +5,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 
 import javafx.collections.FXCollections;
@@ -13,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import sn.epf.pointage.config.SessionContext;
@@ -25,31 +25,28 @@ import sn.epf.pointage.model.PeriodiciteCours;
 import sn.epf.pointage.model.Professeur;
 import sn.epf.pointage.model.Salle;
 import sn.epf.pointage.model.enums.FrequenceCours;
+import sn.epf.pointage.service.EnrolementService;
 
 public class AssignationFormController {
 
-    @FXML private ComboBox<Professeur> comboProfesseur;
-    @FXML private ComboBox<Cours> comboCours;
-    @FXML private ComboBox<Salle> comboSalle;
-
-    @FXML private TextField fieldAnneeAcademique;
-    @FXML private TextField fieldHeuresPrevues;
-
-    @FXML private ComboBox<DayOfWeek> comboJour;
-    @FXML private TextField fieldHeureDebut;
-    @FXML private TextField fieldHeureFin;
+    @FXML private ComboBox<Professeur>    comboProfesseur;
+    @FXML private ComboBox<Cours>         comboCours;
+    @FXML private ComboBox<Salle>         comboSalle;
+    @FXML private TextField               fieldAnneeAcademique;
+    @FXML private TextField               fieldHeuresPrevues;
+    @FXML private ComboBox<DayOfWeek>     comboJour;
+    @FXML private TextField               fieldHeureDebut;
+    @FXML private TextField               fieldHeureFin;
     @FXML private ComboBox<FrequenceCours> comboFrequence;
+    @FXML private DatePicker              dateDebutSemestre;
+    @FXML private DatePicker              dateFinSemestre;
+    @FXML private Label                   lblErreur;
 
-    @FXML private DatePicker dateDebutSemestre;
-    @FXML private DatePicker dateFinSemestre;
+    private final ProfesseurDAO    professeurDAO    = new ProfesseurDAO();
+    private final CoursDAO         coursDAO         = new CoursDAO();
+    private final SalleDAO         salleDAO         = new SalleDAO();
+    private final EnrolementService enrolementService = new EnrolementService();
 
-    @FXML private Label lblErreur;
-
-    private final ProfesseurDAO professeurDAO = new ProfesseurDAO();
-    private final CoursDAO coursDAO = new CoursDAO();
-    private final SalleDAO salleDAO = new SalleDAO();
-
-    private final EnrolementServiceWrapper enrolementService = new EnrolementServiceWrapper();
     private boolean saved = false;
 
     @FXML
@@ -59,7 +56,19 @@ public class AssignationFormController {
             chargerCours();
             chargerSalles();
 
-            comboJour.setItems(FXCollections.observableArrayList(Arrays.asList(DayOfWeek.values())));
+            comboJour.setItems(FXCollections.observableArrayList(DayOfWeek.values()));
+            comboJour.setCellFactory(lv -> new ListCell<>() {
+                @Override protected void updateItem(DayOfWeek d, boolean empty) {
+                    super.updateItem(d, empty);
+                    setText(empty || d == null ? null : jourFr(d));
+                }
+            });
+            comboJour.setButtonCell(new ListCell<>() {
+                @Override protected void updateItem(DayOfWeek d, boolean empty) {
+                    super.updateItem(d, empty);
+                    setText(empty || d == null ? "Choisir..." : jourFr(d));
+                }
+            });
             comboJour.setValue(DayOfWeek.MONDAY);
 
             comboFrequence.setItems(FXCollections.observableArrayList(FrequenceCours.values()));
@@ -67,32 +76,76 @@ public class AssignationFormController {
 
             dateDebutSemestre.setValue(LocalDate.now());
             dateFinSemestre.setValue(LocalDate.now().plusMonths(4));
+
+            int y = LocalDate.now().getYear();
+            fieldAnneeAcademique.setText(y + "-" + (y + 1));
+            fieldHeuresPrevues.setText("60");
+
         } catch (Exception e) {
-            showErreur("Erreur init formulaire : " + e.getMessage());
+            showErreur("Erreur initialisation : " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     private void chargerProfesseurs() {
-        // Si PROFESSEUR connecté : limiter à son profil
         SessionContext ctx = SessionContext.getInstance();
-        if (ctx.isProfesseur() && ctx.getUtilisateurConnecte() != null && ctx.getUtilisateurConnecte().getProfesseurLie() != null) {
-            comboProfesseur.setItems(FXCollections.observableArrayList(ctx.getUtilisateurConnecte().getProfesseurLie()));
-            comboProfesseur.setValue(ctx.getUtilisateurConnecte().getProfesseurLie());
+        if (ctx.isProfesseur() && ctx.getUtilisateurConnecte() != null
+                && ctx.getUtilisateurConnecte().getProfesseurLie() != null) {
+            Professeur p = ctx.getUtilisateurConnecte().getProfesseurLie();
+            comboProfesseur.setItems(FXCollections.observableArrayList(p));
+            comboProfesseur.setValue(p);
             comboProfesseur.setDisable(true);
-            comboProfesseur.setManaged(false);
         } else {
             List<Professeur> profs = professeurDAO.findAllActifs();
             comboProfesseur.setItems(FXCollections.observableArrayList(profs));
+            comboProfesseur.setCellFactory(lv -> new ListCell<>() {
+                @Override protected void updateItem(Professeur p, boolean empty) {
+                    super.updateItem(p, empty);
+                    setText(empty || p == null ? null
+                            : p.getNomComplet() + " (" + p.getMatricule() + ")");
+                }
+            });
+            comboProfesseur.setButtonCell(new ListCell<>() {
+                @Override protected void updateItem(Professeur p, boolean empty) {
+                    super.updateItem(p, empty);
+                    setText(empty || p == null ? "Choisir..." : p.getNomComplet());
+                }
+            });
         }
     }
 
     private void chargerCours() {
-        comboCours.setItems(FXCollections.observableArrayList(coursDAO.findAll()));
+        List<Cours> cours = coursDAO.findAllCours();
+        comboCours.setItems(FXCollections.observableArrayList(cours));
+        comboCours.setCellFactory(lv -> new ListCell<>() {
+            @Override protected void updateItem(Cours c, boolean empty) {
+                super.updateItem(c, empty);
+                setText(empty || c == null ? null : c.getCode() + " — " + c.getIntitule());
+            }
+        });
+        comboCours.setButtonCell(new ListCell<>() {
+            @Override protected void updateItem(Cours c, boolean empty) {
+                super.updateItem(c, empty);
+                setText(empty || c == null ? "Choisir un cours..." : c.getCode() + " — " + c.getIntitule());
+            }
+        });
     }
 
     private void chargerSalles() {
-        comboSalle.setItems(FXCollections.observableArrayList(salleDAO.findAll()));
+        List<Salle> salles = salleDAO.findAllSalles();
+        comboSalle.setItems(FXCollections.observableArrayList(salles));
+        comboSalle.setCellFactory(lv -> new ListCell<>() {
+            @Override protected void updateItem(Salle s, boolean empty) {
+                super.updateItem(s, empty);
+                setText(empty || s == null ? null : s.getNom() + " (" + s.getBatiment() + ")");
+            }
+        });
+        comboSalle.setButtonCell(new ListCell<>() {
+            @Override protected void updateItem(Salle s, boolean empty) {
+                super.updateItem(s, empty);
+                setText(empty || s == null ? "Choisir une salle..." : s.getNom());
+            }
+        });
     }
 
     @FXML
@@ -101,39 +154,39 @@ public class AssignationFormController {
             clearErreur();
 
             Professeur professeur = comboProfesseur.getValue();
-            Cours cours = comboCours.getValue();
-            Salle salle = comboSalle.getValue();
+            Cours      cours      = comboCours.getValue();
+            Salle      salle      = comboSalle.getValue();
 
             if (professeur == null) throw new IllegalArgumentException("Choisissez un professeur.");
-            if (cours == null) throw new IllegalArgumentException("Choisissez un cours.");
-            if (salle == null) throw new IllegalArgumentException("Choisissez une salle.");
+            if (cours == null)      throw new IllegalArgumentException("Choisissez un cours.");
+            if (salle == null)      throw new IllegalArgumentException("Choisissez une salle.");
 
-            String anneeAcademique = fieldAnneeAcademique.getText() == null ? "" : fieldAnneeAcademique.getText().trim();
-            if (anneeAcademique.isBlank()) throw new IllegalArgumentException("Année académique obligatoire.");
+            String annee = fieldAnneeAcademique.getText() == null
+                    ? "" : fieldAnneeAcademique.getText().trim();
+            if (annee.isBlank())
+                throw new IllegalArgumentException("Année académique obligatoire (ex: 2025-2026).");
 
             int heuresPrevues;
-            try {
-                heuresPrevues = Integer.parseInt(fieldHeuresPrevues.getText().trim());
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Heures prévues invalide.");
-            }
+            try { heuresPrevues = Integer.parseInt(fieldHeuresPrevues.getText().trim()); }
+            catch (Exception e) { throw new IllegalArgumentException("Heures prévues : entier requis."); }
 
-            DayOfWeek jour = comboJour.getValue();
+            DayOfWeek      jour      = comboJour.getValue();
             FrequenceCours frequence = comboFrequence.getValue();
+            if (jour == null)      throw new IllegalArgumentException("Choisissez un jour.");
+            if (frequence == null) throw new IllegalArgumentException("Choisissez une fréquence.");
 
             LocalTime heureDebut = parseHeure(fieldHeureDebut.getText(), "Heure début");
-            LocalTime heureFin = parseHeure(fieldHeureFin.getText(), "Heure fin");
+            LocalTime heureFin   = parseHeure(fieldHeureFin.getText(),   "Heure fin");
             int dureeMinutes = (int) Duration.between(heureDebut, heureFin).toMinutes();
-            if (dureeMinutes <= 0) throw new IllegalArgumentException("La durée doit être positive (heure fin > heure début)." );
+            if (dureeMinutes <= 0)
+                throw new IllegalArgumentException("Heure fin doit être après heure début.");
 
-            LocalDate dateDebutSemestreV = dateDebutSemestre.getValue();
-            LocalDate dateFinSemestreV = dateFinSemestre.getValue();
-            if (dateDebutSemestreV == null || dateFinSemestreV == null) {
-                throw new IllegalArgumentException("Dates de semestre obligatoires.");
-            }
-            if (dateFinSemestreV.isBefore(dateDebutSemestreV)) {
-                throw new IllegalArgumentException("Date fin semestre doit être >= date début semestre.");
-            }
+            LocalDate debutSemestre = dateDebutSemestre.getValue();
+            LocalDate finSemestre   = dateFinSemestre.getValue();
+            if (debutSemestre == null || finSemestre == null)
+                throw new IllegalArgumentException("Dates du semestre obligatoires.");
+            if (finSemestre.isBefore(debutSemestre))
+                throw new IllegalArgumentException("Date fin doit être >= date début.");
 
             PeriodiciteCours periodicite = new PeriodiciteCours();
             periodicite.setJourSemaine(jour);
@@ -142,31 +195,42 @@ public class AssignationFormController {
             periodicite.setFrequence(frequence);
             periodicite.setDureeMinutes(dureeMinutes);
 
-            enrolementService.assignerCours(professeur, cours, salle,
-                    anneeAcademique, heuresPrevues,
-                    periodicite, dateDebutSemestreV, dateFinSemestreV);
+            Assignation result = enrolementService.assignerCours(
+                    professeur, cours, salle,
+                    annee, heuresPrevues,
+                    periodicite, debutSemestre, finSemestre);
 
-                // Indiquer que l'objet a été sauvegardé puis fermer
-                this.saved = true;
-                closeWindow();
+            System.out.println("✅ Assignation créée ID=" + result.getId());
+            this.saved = true;
+            closeWindow();
+
         } catch (Exception e) {
             showErreur(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    @FXML
-    public void handleAnnuler() {
-        closeWindow();
-    }
+    @FXML public void handleAnnuler() { closeWindow(); }
 
     private LocalTime parseHeure(String txt, String label) {
-        if (txt == null || txt.isBlank()) throw new IllegalArgumentException(label + " obligatoire.");
-        try {
-            return LocalTime.parse(txt.trim(), DateTimeFormatter.ofPattern("HH:mm"));
-        } catch (Exception e) {
-            throw new IllegalArgumentException(label + " invalide (format attendu HH:mm)." );
+        if (txt == null || txt.isBlank())
+            throw new IllegalArgumentException(label + " obligatoire (format HH:mm).");
+        try { return LocalTime.parse(txt.trim(), DateTimeFormatter.ofPattern("HH:mm")); }
+        catch (Exception e) {
+            throw new IllegalArgumentException(label + " invalide (attendu HH:mm, ex: 08:30).");
         }
+    }
+
+    private String jourFr(DayOfWeek d) {
+        return switch (d) {
+            case MONDAY    -> "Lundi";
+            case TUESDAY   -> "Mardi";
+            case WEDNESDAY -> "Mercredi";
+            case THURSDAY  -> "Jeudi";
+            case FRIDAY    -> "Vendredi";
+            case SATURDAY  -> "Samedi";
+            case SUNDAY    -> "Dimanche";
+        };
     }
 
     private void showErreur(String msg) {
@@ -186,20 +250,5 @@ public class AssignationFormController {
         stage.close();
     }
 
-    /** wrapper pour éviter import service partout */
-    private static class EnrolementServiceWrapper {
-        private final sn.epf.pointage.service.EnrolementService service = new sn.epf.pointage.service.EnrolementService();
-        public Assignation assignerCours(Professeur professeur, Cours cours, Salle salle,
-                                          String anneeAcademique, int heuresPrevues,
-                                          PeriodiciteCours periodicite,
-                                          LocalDate dateDebutSemestre, LocalDate dateFinSemestre) {
-            return service.assignerCours(professeur, cours, salle,
-                    anneeAcademique, heuresPrevues,
-                    periodicite,
-                    dateDebutSemestre, dateFinSemestre);
-        }
-    }
-
     public boolean isSaved() { return saved; }
 }
-

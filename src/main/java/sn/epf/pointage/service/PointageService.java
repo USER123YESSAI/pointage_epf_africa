@@ -1,14 +1,19 @@
 package sn.epf.pointage.service;
 
-import sn.epf.pointage.dao.PointageDAO;
-import sn.epf.pointage.dao.SeanceDAO;
-import sn.epf.pointage.dao.ProfesseurDAO;
-import sn.epf.pointage.model.*;
-import sn.epf.pointage.model.enums.*;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+
+import sn.epf.pointage.dao.PointageDAO;
+import sn.epf.pointage.dao.ProfesseurDAO;
+import sn.epf.pointage.dao.SeanceDAO;
+import sn.epf.pointage.model.Pointage;
+import sn.epf.pointage.model.Professeur;
+import sn.epf.pointage.model.SeancePlanifiee;
+import sn.epf.pointage.model.enums.ResultatPointage;
+import sn.epf.pointage.model.enums.StatutPointage;
+import sn.epf.pointage.model.enums.StatutSeance;
+import sn.epf.pointage.model.enums.TypePointage;
 
 /**
  * Service de pointage — applique les règles RG-01 à RG-05.
@@ -65,7 +70,15 @@ public class PointageService {
                 System.out.println("⏰ RG-01: Trop tôt pour pointer (" + Math.abs(ecart) + " min avant).");
                 return ResultatPointage.TROP_TOT;
             }
+
+            // ecart > +5 => fenêtre fermée
+            if (ecart > FENETRE_APRES_MINUTES) {
+                System.out.println("⏰ RG-01: Trop tard pour pointer (" + ecart + " min après).");
+                return ResultatPointage.SEANCE_INVALIDE;
+            }
+
         }
+
 
         // 6. Créer le pointage
         Pointage pointage = new Pointage(seance, professeur, typePointage);
@@ -111,12 +124,14 @@ public class PointageService {
 
         if (type == TypePointage.DEBUT) {
             long ecart = ChronoUnit.MINUTES.between(seance.getDateHeure(), LocalDateTime.now());
-            return ecart >= -FENETRE_AVANT_MINUTES;
+            // Aligné avec pointer(): fenêtre DEBUT [-15, +5]
+            return ecart >= -FENETRE_AVANT_MINUTES && ecart <= FENETRE_APRES_MINUTES;
         }
 
         // Pour FIN : vérifier que DEBUT est déjà fait
         return pointageDAO.findBySeanceAndType(seance.getId(), TypePointage.DEBUT).isPresent();
     }
+
 
     /**
      * Retourne l'état d'affichage (vert/orange/rouge) pour l'interface.

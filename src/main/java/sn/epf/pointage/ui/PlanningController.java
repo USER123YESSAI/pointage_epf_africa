@@ -1,5 +1,6 @@
 package sn.epf.pointage.ui;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,13 +24,10 @@ import javafx.scene.control.TableView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sn.epf.pointage.config.SessionContext;
-import sn.epf.pointage.dao.AssignationDAO;
 import sn.epf.pointage.dao.ProfesseurDAO;
 import sn.epf.pointage.dao.SeanceDAO;
 import sn.epf.pointage.model.Professeur;
 import sn.epf.pointage.model.SeancePlanifiee;
-import sn.epf.pointage.ui.AssignationFormController;
-import sn.epf.pointage.ui.Toast;
 
 public class PlanningController {
 
@@ -46,7 +44,6 @@ public class PlanningController {
 
     private final ProfesseurDAO professeurDAO = new ProfesseurDAO();
     private final SeanceDAO seanceDAO = new SeanceDAO();
-    private final AssignationDAO assignationDAO = new AssignationDAO();
 
     @FXML
     public void initialize() {
@@ -61,7 +58,6 @@ public class PlanningController {
         btnNouvellePlanification.setVisible(peutGerer);
         btnNouvellePlanification.setManaged(peutGerer);
 
-        // Charger immédiatement les séances de la semaine courante
         chargerSeances();
     }
 
@@ -81,20 +77,20 @@ public class PlanningController {
             }
         });
 
-        // Pré-sélectionner si professeur connecté
         if (SessionContext.getInstance().isProfesseur()) {
-            Professeur profConnecte = SessionContext.getInstance().getUtilisateurConnecte().getProfesseurLie();
+            Professeur profConnecte = SessionContext.getInstance()
+                    .getUtilisateurConnecte().getProfesseurLie();
             if (profConnecte != null) {
-                comboProfesseur.setValue(
-                        profs.stream().filter(p -> p.getId().equals(profConnecte.getId())).findFirst().orElse(null)
-                );
+                comboProfesseur.setValue(profs.stream()
+                        .filter(p -> p.getId().equals(profConnecte.getId()))
+                        .findFirst().orElse(null));
                 comboProfesseur.setDisable(true);
             }
         }
     }
 
     private void configurerColonnes() {
-        DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("EEEE dd/MM", java.util.Locale.FRENCH);
+        DateTimeFormatter dateFmt  = DateTimeFormatter.ofPattern("EEEE dd/MM", java.util.Locale.FRENCH);
         DateTimeFormatter heureFmt = DateTimeFormatter.ofPattern("HH:mm");
 
         colJour.setCellValueFactory(data -> {
@@ -109,18 +105,29 @@ public class PlanningController {
             return new javafx.beans.property.SimpleStringProperty(h);
         });
 
+        // CORRECTION : protection LazyInitializationException sur toutes les colonnes
         colCours.setCellValueFactory(data -> {
-            SeancePlanifiee s = data.getValue();
-            String c = s.getAssignation() != null && s.getAssignation().getCours() != null
-                    ? s.getAssignation().getCours().getIntitule() : "N/A";
-            return new javafx.beans.property.SimpleStringProperty(c);
+            try {
+                SeancePlanifiee s = data.getValue();
+                if (s.getAssignation() == null || s.getAssignation().getCours() == null)
+                    return new javafx.beans.property.SimpleStringProperty("N/A");
+                return new javafx.beans.property.SimpleStringProperty(
+                        s.getAssignation().getCours().getIntitule());
+            } catch (Exception e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
         });
 
         colSalle.setCellValueFactory(data -> {
-            SeancePlanifiee s = data.getValue();
-            String salle = s.getAssignation() != null && s.getAssignation().getSalle() != null
-                    ? s.getAssignation().getSalle().getNom() : "N/A";
-            return new javafx.beans.property.SimpleStringProperty(salle);
+            try {
+                SeancePlanifiee s = data.getValue();
+                if (s.getAssignation() == null || s.getAssignation().getSalle() == null)
+                    return new javafx.beans.property.SimpleStringProperty("N/A");
+                return new javafx.beans.property.SimpleStringProperty(
+                        s.getAssignation().getSalle().getNom());
+            } catch (Exception e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
         });
 
         colDuree.setCellValueFactory(data -> {
@@ -129,16 +136,17 @@ public class PlanningController {
         });
 
         colStatut.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getStatut().toString()));
+                new javafx.beans.property.SimpleStringProperty(
+                        data.getValue().getStatut().toString()));
         colStatut.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String s, boolean empty) {
                 super.updateItem(s, empty);
                 if (empty || s == null) { setGraphic(null); setText(null); return; }
                 Label badge = new Label(s);
-                badge.getStyleClass().add(switch(s) {
+                badge.getStyleClass().add(switch (s) {
                     case "REALISEE" -> "badge-ok";
-                    case "ANNULEE" -> "badge-absent";
-                    default -> "badge-retard";
+                    case "ANNULEE"  -> "badge-absent";
+                    default         -> "badge-retard";
                 });
                 setGraphic(badge);
                 setText(null);
@@ -149,12 +157,10 @@ public class PlanningController {
     private void chargerSeances() {
         if (dateDebut.getValue() == null) return;
 
-        // Charger la semaine : lundi→dimanche
-        LocalDate lundi = dateDebut.getValue().with(java.time.DayOfWeek.MONDAY);
+        LocalDate lundi    = dateDebut.getValue().with(DayOfWeek.MONDAY);
         LocalDate dimanche = lundi.plusDays(6);
-
         LocalDateTime debut = lundi.atStartOfDay();
-        LocalDateTime fin = dimanche.plusDays(1).atStartOfDay();
+        LocalDateTime fin   = dimanche.plusDays(1).atStartOfDay();
 
         Professeur filtre = comboProfesseur.getValue();
         List<SeancePlanifiee> seances;
@@ -171,45 +177,40 @@ public class PlanningController {
     @FXML
     public void handleNouvellePlanification() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/assignation_form.fxml"));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/assignation_form.fxml"));
             Parent root = loader.load();
+            AssignationFormController formCtrl = loader.getController();
 
             Stage dialog = new Stage();
             dialog.initModality(Modality.APPLICATION_MODAL);
             dialog.initOwner(btnNouvellePlanification.getScene().getWindow());
-            dialog.setTitle("Nouvelle assignation");
-            dialog.setScene(new Scene(root, 760, 720));
-
-            // Récupérer le controller pour savoir si sauvegarde effectuée
-            AssignationFormController formCtrl = loader.getController();
+            dialog.setTitle("Nouvelle assignation de cours");
+            dialog.setScene(new Scene(root));
             dialog.showAndWait();
 
-            boolean wasSaved = formCtrl != null && formCtrl.isSaved();
-            if (wasSaved) {
-                Toast.show(btnNouvellePlanification, "Assignation créée avec succès.");
+            if (formCtrl != null && formCtrl.isSaved()) {
+                new Alert(Alert.AlertType.INFORMATION,
+                        "Assignation créée avec succès ! Les séances ont été générées.",
+                        ButtonType.OK).showAndWait();
             }
-
             chargerSeances();
+
         } catch (Exception e) {
-            Alert err = new Alert(Alert.AlertType.ERROR,
+            new Alert(Alert.AlertType.ERROR,
                     "Erreur ouverture formulaire : " + e.getMessage(),
-                    ButtonType.OK);
-            err.setTitle("Erreur");
-            err.showAndWait();
+                    ButtonType.OK).showAndWait();
             e.printStackTrace();
         }
     }
 
-    @FXML
-    public void handleSemainePrec() {
+    @FXML public void handleSemainePrec() {
         if (dateDebut.getValue() != null)
             dateDebut.setValue(dateDebut.getValue().minusWeeks(1));
     }
 
-    @FXML
-    public void handleSemaineSuiv() {
+    @FXML public void handleSemaineSuiv() {
         if (dateDebut.getValue() != null)
             dateDebut.setValue(dateDebut.getValue().plusWeeks(1));
     }
 }
-

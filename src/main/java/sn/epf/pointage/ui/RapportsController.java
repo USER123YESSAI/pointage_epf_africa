@@ -1,31 +1,42 @@
 package sn.epf.pointage.ui;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.stage.FileChooser;
 import sn.epf.pointage.config.SessionContext;
+import sn.epf.pointage.dao.PointageDAO;
 import sn.epf.pointage.dao.ProfesseurDAO;
 import sn.epf.pointage.dao.SeanceDAO;
-import sn.epf.pointage.dao.PointageDAO;
 import sn.epf.pointage.model.Professeur;
 import sn.epf.pointage.model.RapportMensuel;
 import sn.epf.pointage.model.SeancePlanifiee;
-import sn.epf.pointage.model.enums.StatutSeance;
 import sn.epf.pointage.model.enums.TypePointage;
 import sn.epf.pointage.service.RapportService;
-
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class RapportsController {
 
     @FXML private ComboBox<Professeur> comboProfesseur;
-    @FXML private ComboBox<Integer> comboMois;
-    @FXML private ComboBox<Integer> comboAnnee;
+    @FXML private ComboBox<Integer>    comboMois;
+    @FXML private ComboBox<Integer>    comboAnnee;
     @FXML private Label lblTotalHeures;
     @FXML private Label lblMontantXOF;
     @FXML private Label lblStatutRapport;
-    @FXML private TableView<SeancePlanifiee> tableSeances;
+    @FXML private TableView<SeancePlanifiee>         tableSeances;
     @FXML private TableColumn<SeancePlanifiee, String> colDate;
     @FXML private TableColumn<SeancePlanifiee, String> colCours;
     @FXML private TableColumn<SeancePlanifiee, String> colDuree;
@@ -34,10 +45,10 @@ public class RapportsController {
     @FXML private Button btnValider;
     @FXML private Button btnExporter;
 
-    private final RapportService rapportService = new RapportService();
-    private final ProfesseurDAO professeurDAO = new ProfesseurDAO();
-    private final SeanceDAO seanceDAO = new SeanceDAO();
-    private final PointageDAO pointageDAO = new PointageDAO();
+    private final RapportService  rapportService  = new RapportService();
+    private final ProfesseurDAO   professeurDAO   = new ProfesseurDAO();
+    private final SeanceDAO       seanceDAO       = new SeanceDAO();
+    private final PointageDAO     pointageDAO     = new PointageDAO();
     private RapportMensuel rapportCourant;
 
     @FXML
@@ -48,13 +59,13 @@ public class RapportsController {
     }
 
     private void chargerFiltres() {
-        // Professeurs
         List<Professeur> profs = professeurDAO.findAllActifs();
         comboProfesseur.setItems(FXCollections.observableArrayList(profs));
         comboProfesseur.setCellFactory(lv -> new ListCell<>() {
             @Override protected void updateItem(Professeur p, boolean empty) {
                 super.updateItem(p, empty);
-                setText(empty || p == null ? null : p.getNomComplet() + " (" + p.getMatricule() + ")");
+                setText(empty || p == null ? null
+                        : p.getNomComplet() + " (" + p.getMatricule() + ")");
             }
         });
         comboProfesseur.setButtonCell(new ListCell<>() {
@@ -64,21 +75,20 @@ public class RapportsController {
             }
         });
 
-        // Si PROFESSEUR connecté, pré-sélectionner son profil
         if (SessionContext.getInstance().isProfesseur()) {
-            Professeur profConnecte = SessionContext.getInstance().getUtilisateurConnecte().getProfesseurLie();
+            Professeur profConnecte = SessionContext.getInstance()
+                    .getUtilisateurConnecte().getProfesseurLie();
             if (profConnecte != null) {
                 comboProfesseur.setValue(profs.stream()
-                        .filter(p -> p.getId().equals(profConnecte.getId())).findFirst().orElse(null));
+                        .filter(p -> p.getId().equals(profConnecte.getId()))
+                        .findFirst().orElse(null));
                 comboProfesseur.setDisable(true);
             }
         }
 
-        // Mois
         comboMois.setItems(FXCollections.observableArrayList(1,2,3,4,5,6,7,8,9,10,11,12));
         comboMois.setValue(java.time.LocalDate.now().getMonthValue());
 
-        // Années
         int annee = java.time.LocalDate.now().getYear();
         comboAnnee.setItems(FXCollections.observableArrayList(annee-2, annee-1, annee, annee+1));
         comboAnnee.setValue(annee);
@@ -86,58 +96,76 @@ public class RapportsController {
 
     private void configurerColonnes() {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
         colDate.setCellValueFactory(data ->
                 new javafx.beans.property.SimpleStringProperty(
-                        data.getValue().getDateHeure() != null ? data.getValue().getDateHeure().format(fmt) : ""));
+                        data.getValue().getDateHeure() != null
+                                ? data.getValue().getDateHeure().format(fmt) : ""));
 
+        // CORRECTION : protection LazyInitializationException
         colCours.setCellValueFactory(data -> {
-            SeancePlanifiee s = data.getValue();
-            String c = s.getAssignation() != null && s.getAssignation().getCours() != null
-                    ? s.getAssignation().getCours().getIntitule() : "N/A";
-            return new javafx.beans.property.SimpleStringProperty(c);
+            try {
+                SeancePlanifiee s = data.getValue();
+                if (s.getAssignation() == null || s.getAssignation().getCours() == null)
+                    return new javafx.beans.property.SimpleStringProperty("N/A");
+                return new javafx.beans.property.SimpleStringProperty(
+                        s.getAssignation().getCours().getIntitule());
+            } catch (Exception e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
         });
 
         colDuree.setCellValueFactory(data -> {
             Integer d = data.getValue().getDureeMinutes();
-            String txt = d != null ? String.format("%.2f h", d / 60.0) : "N/A";
-            return new javafx.beans.property.SimpleStringProperty(txt);
+            return new javafx.beans.property.SimpleStringProperty(
+                    d != null ? String.format("%.2f h", d / 60.0) : "N/A");
         });
 
         colStatut.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getStatut().toString()));
+                new javafx.beans.property.SimpleStringProperty(
+                        data.getValue().getStatut().toString()));
 
         colPointage.setCellValueFactory(data -> {
-            boolean ok = pointageDAO.findBySeanceAndType(data.getValue().getId(), TypePointage.DEBUT).isPresent();
-            return new javafx.beans.property.SimpleStringProperty(ok ? "✅ Oui" : "❌ Non");
+            try {
+                boolean ok = pointageDAO.findBySeanceAndType(
+                        data.getValue().getId(), TypePointage.DEBUT).isPresent();
+                return new javafx.beans.property.SimpleStringProperty(ok ? "✅ Oui" : "❌ Non");
+            } catch (Exception e) {
+                return new javafx.beans.property.SimpleStringProperty("—");
+            }
         });
     }
 
     private void configurerAcces() {
         boolean peutValider = SessionContext.getInstance().peutValiderRapports();
         btnValider.setVisible(peutValider);
+        btnValider.setManaged(peutValider);
     }
 
     @FXML
     public void handleGenerer() {
-        Professeur prof = comboProfesseur.getValue();
-        Integer mois = comboMois.getValue();
-        Integer annee = comboAnnee.getValue();
+        Professeur prof  = comboProfesseur.getValue();
+        Integer    mois  = comboMois.getValue();
+        Integer    annee = comboAnnee.getValue();
 
         if (prof == null || mois == null || annee == null) {
-            new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner un professeur, un mois et une année.", ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.WARNING,
+                    "Veuillez sélectionner un professeur, un mois et une année.",
+                    ButtonType.OK).showAndWait();
             return;
         }
 
         try {
             rapportCourant = rapportService.genererRapportMensuel(prof.getId(), mois, annee);
 
-            // Mettre à jour les labels
-            lblTotalHeures.setText(String.format("Total heures : %.2f h", rapportCourant.getHeuresRealisees()));
-            lblMontantXOF.setText(String.format("Montant XOF : %,.0f XOF", rapportCourant.getMontantXOF()));
+            lblTotalHeures.setText(
+                    String.format("Total heures : %.2f h", rapportCourant.getHeuresRealisees()));
+            lblMontantXOF.setText(
+                    String.format("Montant XOF : %,.0f XOF", rapportCourant.getMontantXOF()));
             lblStatutRapport.setText("Statut : " + rapportCourant.getStatut());
 
-            // Charger les séances du mois
-            List<SeancePlanifiee> seances = seanceDAO.findByProfesseurAndMois(prof.getId(), mois, annee);
+            List<SeancePlanifiee> seances =
+                    seanceDAO.findByProfesseurAndMois(prof.getId(), mois, annee);
             tableSeances.setItems(FXCollections.observableArrayList(seances));
 
             btnValider.setDisable(false);
@@ -146,7 +174,9 @@ public class RapportsController {
         } catch (IllegalStateException e) {
             new Alert(Alert.AlertType.WARNING, e.getMessage(), ButtonType.OK).showAndWait();
         } catch (Exception e) {
-            new Alert(Alert.AlertType.ERROR, "Erreur génération rapport : " + e.getMessage(), ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.ERROR,
+                    "Erreur génération rapport : " + e.getMessage(), ButtonType.OK).showAndWait();
+            e.printStackTrace();
         }
     }
 
@@ -156,31 +186,50 @@ public class RapportsController {
         try {
             rapportService.validerRapport(rapportCourant.getId());
             lblStatutRapport.setText("Statut : VALIDE");
-            new Alert(Alert.AlertType.INFORMATION, "Rapport validé avec succès.", ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.INFORMATION,
+                    "Rapport validé avec succès.", ButtonType.OK).showAndWait();
         } catch (Exception e) {
-            new Alert(Alert.AlertType.ERROR, "Erreur : " + e.getMessage(), ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.ERROR,
+                    "Erreur : " + e.getMessage(), ButtonType.OK).showAndWait();
         }
     }
 
     @FXML
     public void handleExporter() {
         if (rapportCourant == null) return;
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Exporter le rapport au format PDF");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Fichier PDF", "*.pdf"));
+        chooser.setInitialFileName(String.format("rapport-%s-%02d-%d.pdf",
+                rapportCourant.getProfesseur().getMatricule(),
+                rapportCourant.getMois(),
+                rapportCourant.getAnnee()));
+
+        File fichier = chooser.showSaveDialog(btnExporter.getScene().getWindow());
+        if (fichier == null) {
+            return;
+        }
+        if (!fichier.getName().toLowerCase().endsWith(".pdf")) {
+            fichier = new File(fichier.getAbsolutePath() + ".pdf");
+        }
+
         try {
-            String contenu = rapportService.exporterRapportTexte(rapportCourant.getId());
-
-            // Afficher dans une fenêtre texte (PDF JasperReports en bonus)
-            TextArea ta = new TextArea(contenu);
-            ta.setEditable(false);
-            ta.setStyle("-fx-font-family: monospace; -fx-font-size: 12;");
-            ta.setPrefSize(600, 500);
-
-            javafx.scene.control.Dialog<Void> dialog = new javafx.scene.control.Dialog<>();
-            dialog.setTitle("Rapport mensuel — Aperçu");
-            dialog.getDialogPane().setContent(ta);
-            dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-            dialog.showAndWait();
+            rapportService.exporterRapportPdf(rapportCourant.getId(), Path.of(fichier.getAbsolutePath()));
+            if (Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().open(fichier);
+                } catch (IOException ex) {
+                    System.err.println("Impossible d'ouvrir le PDF automatiquement : " + ex.getMessage());
+                }
+            }
+            new Alert(Alert.AlertType.INFORMATION,
+                    "Export PDF créé : " + fichier.getAbsolutePath(), ButtonType.OK).showAndWait();
         } catch (Exception e) {
-            new Alert(Alert.AlertType.ERROR, "Erreur export : " + e.getMessage(), ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.ERROR,
+                    "Erreur export PDF : " + e.getMessage(), ButtonType.OK).showAndWait();
+            e.printStackTrace();
         }
     }
 }
